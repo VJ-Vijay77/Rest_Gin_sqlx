@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/VJ-Vijay77/Rest-with-Gin/db"
@@ -73,9 +74,64 @@ func TestPass(c *gin.Context) {
 
 func AddUser(c *gin.Context) {
 	var cred User
+	db := db.InitDb()
 
 	if err := c.ShouldBindJSON(&cred); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "error occured"})
 		return
 	}
+
+	hashedPass,err := hashpassword.HashPassword(cred.Password)
+	if err != nil {
+		c.JSON(400,gin.H{"error":"couldnt hash password"})
+	}
+
+	db.Exec(schemas.Users)
+
+	Users := `INSERT INTO users(Name,Password) VALUES($1,$2)`
+
+	db.MustExec(Users, cred.Name, hashedPass)
+
+	c.JSON(200,gin.H{
+		"success":"Entry created",
+	})
+
+
+}
+
+
+func CheckPass(c *gin.Context) {
+	var cred User
+
+	if err := c.ShouldBindJSON(&cred); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "error occured"})
+		return
+	}
+
+	users := User{}
+	db := db.InitDb()
+
+	err := db.Get(&users,"SELECT password FROM users WHERE name=$1",cred.Name)
+	if err != nil {
+		fmt.Println("error getting data")
+		return
+	}
+
+	fmt.Println("username from db",users.Name)
+	fmt.Println("username from password",users.Password)
+
+
+	ok := hashpassword.CheckHashPass(cred.Password,users.Password)
+	if ok != nil {
+		c.JSON(401,gin.H{
+			"Wrong Password":"CHeck again",
+		})
+		
+		return
+	}
+
+	c.JSON(200,gin.H{
+		"success":"verified",
+	})
+
 }

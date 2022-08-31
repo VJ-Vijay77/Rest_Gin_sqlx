@@ -7,3 +7,7 @@ package schemas
 	Salary integer);`
 
 var AlterAge = `ALTER TABLE details ADD COLUMN Age varchar;`	
+
+var Users = `CREATE TABLE users(
+	Name text,
+	Password text);`

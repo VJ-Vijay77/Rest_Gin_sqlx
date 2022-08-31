@@ -16,6 +16,11 @@ type Details struct {
 	Age    int64  `json:"age"`
 }
 
+type User struct {
+	Name     string `json:"name"`
+	Password string `json:"pass"`
+}
+
 type Password struct {
 	Password string `json:"pass"`
 }
@@ -40,30 +45,37 @@ func Test(c *gin.Context) {
 
 }
 
-
 func TestPass(c *gin.Context) {
 	var req Password
 
-	
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "error occured"})
 		return
 	}
 
-	hashed,err := hashpassword.HashPassword(req.Password)
+	hashed, err := hashpassword.HashPassword(req.Password)
 	if err != nil {
-		c.JSON(401,gin.H{"e":"Error getting hash"})
+		c.JSON(401, gin.H{"e": "Error getting hash"})
 		return
 	}
 	var result string
-	check := hashpassword.CheckHashPass(req.Password,hashed)
+	check := hashpassword.CheckHashPass(req.Password, hashed)
 	if check == nil {
 		result = "Verified"
-	}else {
+	} else {
 		result = "Wrong one"
 	}
-	c.JSON(200,gin.H{
-		"Hashed Password": hashed,
+	c.JSON(200, gin.H{
+		"Hashed Password":         hashed,
 		"Checking Passed if Same": result,
 	})
+}
+
+func AddUser(c *gin.Context) {
+	var cred User
+
+	if err := c.ShouldBindJSON(&cred); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "error occured"})
+		return
+	}
 }

@@ -1,9 +1,9 @@
-REST API with GIN-Gonic and POSTGRES using SQLX
+**REST API with GIN-Gonic and POSTGRES using SQLX**
 
--Authentication with JWT
+-*Authentication with JWT*
 
--Token Refresh
+*-Token Refresh*
 
--easy running with Makefile Commands
+*-easy running with Makefile Commands*
 
--To run do -  --> make up
+*-To run do -  --> make up*

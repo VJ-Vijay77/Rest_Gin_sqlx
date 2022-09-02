@@ -3,6 +3,7 @@ package jwt
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/VJ-Vijay77/Rest-with-Gin/db"
 	"github.com/VJ-Vijay77/Rest-with-Gin/hashpassword"
@@ -48,6 +49,31 @@ func Signin(c *gin.Context) {
 		})
 		return
 	}
+
+	expireTime := time.Now().Add(1 *time.Minute)
+
+	claims := &Claims{
+		Username: Creds.Username,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expireTime.Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,claims)
+
+	tokenString,err := token.SignedString(JwtKey)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError,gin.H{
+			"status":"Internal Servor Error",
+		})
+		return
+	}
+
+	http.SetCookie(c.Writer,&http.Cookie{
+		Name: "token",
+		Value: tokenString,
+		Expires: expireTime,
+	})
 
 
 

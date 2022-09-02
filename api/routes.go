@@ -12,4 +12,6 @@ func Routes(api *gin.Engine) {
 	api.POST("/adduser",AddUser)
 	api.POST("/checkpass",CheckPass)
 	api.POST("/signin",jwt.Signin)
+	api.GET("/welcome",jwt.Welcome)
+	api.GET("/refresh",jwt.RefreshJWT)
 }

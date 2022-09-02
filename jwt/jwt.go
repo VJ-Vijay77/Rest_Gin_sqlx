@@ -49,7 +49,7 @@ func Signin(c *gin.Context) {
 	}
 
 	expireTime := time.Now().Add(9 * time.Minute)
-	JwtexpireTime := time.Now().Add(25 * time.Second)
+	JwtexpireTime := time.Now().Add(3 * time.Minute)
 
 	claims := &Claims{
 		Username: Creds.Username,
@@ -144,6 +144,7 @@ func RefreshJWT (c *gin.Context) {
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return JwtKey, nil
 	})
+	
 
 	if !token.Valid {
 		c.JSON(401, gin.H{
@@ -164,11 +165,12 @@ func RefreshJWT (c *gin.Context) {
 		
 	}
 
-
-	if time.Unix(claims.ExpiresAt,0).Sub(time.Now()) > 35*time.Second {
-		c.JSON(400,gin.H{"staus":"Bad Request (time 35 + seconds)"})
+	claimstime :=  time.Unix(claims.ExpiresAt,0)
+	if time.Until(claimstime) > 1*time.Minute {
+		c.JSON(400,gin.H{"staus":"Token is already valid for godd time(time 35 + seconds)"})
 		return
 	}
+
 
 	JwtExpireTime := time.Now().Add(25 *time.Second)
 	ExpireTime := time.Now().Add(5 *time.Minute)

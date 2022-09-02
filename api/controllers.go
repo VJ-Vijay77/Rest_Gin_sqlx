@@ -17,6 +17,11 @@ type Details struct {
 	Age    int64  `json:"age"`
 }
 
+type Update struct {
+	OldUsername string `json:"oldname"`
+	NewUsername string `json:"newname"`
+}
+
 type User struct {
 	Name     string `json:"name"`
 	Password string `json:"pass"`
@@ -71,6 +76,15 @@ func TestPass(c *gin.Context) {
 		"Checking Passed if Same": result,
 	})
 }
+
+func DropTable(c *gin.Context) {
+	db := db.InitDb()
+	res :=db.MustExec(schemas.DropUserTable)
+	k,_ := res.RowsAffected()
+	c.String(200,"Droped %d",k)
+
+} 
+
 
 func AddUser(c *gin.Context) {
 	var cred User
@@ -133,5 +147,60 @@ func CheckPass(c *gin.Context) {
 	c.JSON(200,gin.H{
 		"success":"verified",
 	})
+
+}
+
+func GetUser(c *gin.Context) {
+	db := db.InitDb()
+	// var cred User
+	// if err := c.ShouldBindJSON(&cred); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "error occured"})
+	// 	return
+	// }
+		param := c.Param("name")
+	user:= User{}
+
+	err := db.Get(&user,"SELECT name,password FROM users WHERE name=$1",param)
+	if err != nil {
+		c.String(400,"Couldnt find data")
+		return
+	}
+
+	c.JSON(200,gin.H{
+		"Name":user.Name,
+		"Hashed Pass":user.Password,
+	})
+
+}
+
+func EditUser(c *gin.Context) {
+	db := db.InitDb()
+	var cred Update
+
+	oldusername := c.Param("ID")
+	if err := c.ShouldBindJSON(&cred); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "error occured"})
+		return
+	}
+
+	db.Exec("UPDATE users SET name=$1 WHERE id=$2",cred.NewUsername,oldusername)
+
+	c.JSON(200,gin.H{
+		"status":"Updated Successful",
+	})
+
+
+}
+
+func Delete(c *gin.Context) {
+	db := db.InitDb()
+	id := c.Param("ID")
+
+	db.Exec("DELETE FROM users WHERE id=$1",id)
+
+	c.JSON(200,gin.H{
+		"status":"Deleted Successful",
+	})
+
 
 }
